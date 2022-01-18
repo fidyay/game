@@ -16,6 +16,8 @@ import ChairSource from "../sprites/chair.png";
 import BackpackSource from "../sprites/backpack.png";
 import ParrotSource from "../sprites/parrot.png";
 import GirlRunningSource from "../sprites/girl_running.png";
+import GirlJumpingSource from "../sprites/girl_jumping.png";
+import GirlSlidingSource from "../sprites/girl_sliding.png";
 
 const Wallpaper = new Image()
 Wallpaper.src = WallpaperSource
@@ -31,6 +33,10 @@ const Parrot = new Image()
 Parrot.src = ParrotSource
 const GirlRunning = new Image()
 GirlRunning.src = GirlRunningSource
+const GirlJumping = new Image()
+GirlJumping.src = GirlJumpingSource
+const GirlSliding = new Image()
+GirlSliding.src = GirlSlidingSource
 
 const wallpaperWidth = 84
 const floorWidth = 192
@@ -43,8 +49,12 @@ const backpackHeight = 82
 const backpackWidth = 85
 const parrotWidth = 46
 const parrotHeight = 28
-const girlWidth = 66
-const girlHeight = 132
+const girlRunningWidth = 66
+const girlRunningHeight = 132
+const girlJumpingWidth = 78
+const girlJumpingHeight = 156
+const girlSlidingWidth = 120
+const girlSlidingHeight = 78
 
 export default function GameField() {
     const {height, width} = useWindowDimensions()
@@ -64,9 +74,35 @@ export default function GameField() {
         const wallpapers = []
         const floors = []
         const obstacles = []
-        let movingSpeed = 3
+        let movingSpeed = 8
         let perf = performance.now()
         const Player = new GirlClass()
+        // let acceleration = 10
+        // let playerJumpingY = 0
+
+        document.addEventListener('keydown', e => {
+            const code = e.code
+            if (Player.currentAction !== 'jumping') {
+                if (code === 'KeyW' || code === 'ArrowUp' || code === 'Space') {
+                    Player.jump()
+                }
+            }
+            if (Player.currentAction !== 'sliding' && Player.currentAction !== 'jumping') {
+                if (code === 'KeyS' || code === 'ArrowDown') {
+                    Player.slide()
+                }
+            }
+        }) 
+
+        document.addEventListener('keyup', e => {
+            const code = e.code
+            if (Player.currentAction === 'sliding') {
+                if (code === 'KeyS' || code === 'ArrowDown') {
+                    Player.run()
+                }
+            }
+        })
+
 
         function draw() {
             // initialize state to start
@@ -121,8 +157,13 @@ export default function GameField() {
 
             // drawing player
 
-            cd.drawImage(GirlRunning, Player.imageX, 0, girlWidth, girlHeight, width * .2, height - floorHeight + 12 - girlHeight, girlWidth, girlHeight)
-            
+            if (Player.currentAction === 'running') {
+                cd.drawImage(GirlRunning, Player.imageX, 0, girlRunningWidth, girlRunningHeight, width * .2, height - floorHeight + 12 - girlRunningHeight, girlRunningWidth, girlRunningHeight)
+            } else if (Player.currentAction === 'jumping') {
+                cd.drawImage(GirlJumping, Player.jumpImageX, 0, girlJumpingWidth, girlJumpingHeight, width * .2, height - floorHeight + 12 - girlJumpingHeight - Player.jumpY, girlJumpingWidth, girlJumpingHeight)
+            } else if (Player.currentAction === 'sliding') {
+                cd.drawImage(GirlSliding, Player.imageX, 0, girlSlidingWidth, girlSlidingHeight, width * .2, height - floorHeight + 12 - girlSlidingHeight, girlSlidingWidth, girlSlidingHeight)
+            }
 
             if ((performance.now() - perf) >= 16) {
                 perf = performance.now()
@@ -189,6 +230,7 @@ export default function GameField() {
                             obstacles.push(new CageClass(obstacles[obstacles.length - 1].x + cageWidth + getRandomPosition()))
                             break
                     }
+
                 }
             }
 
