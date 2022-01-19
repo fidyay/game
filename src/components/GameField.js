@@ -9,6 +9,7 @@ import ChairClass from "../classes/Chair.js";
 import BackpackClass from "../classes/Backpack.js";
 import ParrotClass from "../classes/Parrot.js";
 import GirlClass from "../classes/Girl.js";
+import Particle from "../classes/Particle.js";
 import WallpaperSource from "../sprites/wallpaper.png";
 import FloorSource from "../sprites/floor.png";
 import CageSource from "../sprites/cage.png";
@@ -74,15 +75,14 @@ export default function GameField() {
         const wallpapers = []
         const floors = []
         const obstacles = []
+        const particles = []
         let movingSpeed = 8
         let perf = performance.now()
         const Player = new GirlClass()
-        // let acceleration = 10
-        // let playerJumpingY = 0
 
         document.addEventListener('keydown', e => {
             const code = e.code
-            if (Player.currentAction !== 'jumping') {
+            if (Player.currentAction !== 'jumping' && Player.currentAction !== 'sliding') {
                 if (code === 'KeyW' || code === 'ArrowUp' || code === 'Space') {
                     Player.jump()
                 }
@@ -125,6 +125,10 @@ export default function GameField() {
                 obstacles.push(new CageClass(width + getRandomPosition()))
             }
 
+            if (Player.currentAction !== 'sliding' && particles.length > 0) {
+                particles.length = 0
+            }
+
             // drawing current state of the game
     
             cd.clearRect(0, 0, width, height)
@@ -163,6 +167,29 @@ export default function GameField() {
                 cd.drawImage(GirlJumping, Player.jumpImageX, 0, girlJumpingWidth, girlJumpingHeight, width * .2, height - floorHeight + 12 - girlJumpingHeight - Player.jumpY, girlJumpingWidth, girlJumpingHeight)
             } else if (Player.currentAction === 'sliding') {
                 cd.drawImage(GirlSliding, Player.imageX, 0, girlSlidingWidth, girlSlidingHeight, width * .2, height - floorHeight + 12 - girlSlidingHeight, girlSlidingWidth, girlSlidingHeight)
+            }
+
+            // drawing particles
+
+            if (Player.currentAction === 'sliding') {
+                const transparentParticlesIndex = []
+                particles.forEach((particle, index) => {
+                    if (particle._opacity <= 0) {
+                        transparentParticlesIndex.push(index)
+                    }
+                })
+                transparentParticlesIndex.forEach(index => {
+                    particles.splice(index, 1)
+                })
+                particles.forEach(particle => {
+                    cd.fillStyle = `rgba(238, 211, 164, ${particle.opacity})`
+                    cd.fillRect(particle.x, particle.y, particle.width, particle.height)
+                })
+            }
+
+            // adding particles while sliding
+            if (Player.currentAction === 'sliding') {
+                particles.push(new Particle(width, height, floorHeight))
             }
 
             if ((performance.now() - perf) >= 16) {
@@ -230,6 +257,8 @@ export default function GameField() {
                             obstacles.push(new CageClass(obstacles[obstacles.length - 1].x + cageWidth + getRandomPosition()))
                             break
                     }
+
+
 
                 }
             }
