@@ -3,6 +3,10 @@ export default class Girl {
     _perf = performance.now()
     _jumpPerf = performance.now()
     _animationState = 0
+    hitboxRunningWidth = 36
+    // hitboxRunningHeight = 132
+    // hitboxSlidingHeight = 78
+    hitboxSlidingWidth = 120
     _cv = 14
     _jumpY = 0
     get imageX() {
@@ -25,6 +29,9 @@ export default class Girl {
 
         }
         return imageX
+    }
+    get y() {
+        return this._jumpY
     }
     get jumpY() {
         if (performance.now() - this._jumpPerf >= 60) {
@@ -60,6 +67,10 @@ export default class Girl {
         if (this._cv >= 0 && this._cv <= 3) return 192
         if (this._cv < 0 && this._cv >= -3) return 384
         if (this._cv < 0 && this._cv >= -14) return 576
+        return 0
+    }
+    get paddingLeft() {
+        if (this.currentAction === 'jumping') return 6
         return 0
     }
 }

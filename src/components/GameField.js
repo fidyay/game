@@ -76,9 +76,16 @@ export default function GameField() {
         const floors = []
         const obstacles = []
         const particles = []
+        let animationFrameId
         let movingSpeed = 8
         let perf = performance.now()
         const Player = new GirlClass()
+
+
+        // temporary variable
+
+        let gameLost = false
+
 
         document.addEventListener('keydown', e => {
             const code = e.code
@@ -103,8 +110,35 @@ export default function GameField() {
             }
         })
 
+        function looseGame() {
+            cancelAnimationFrame(animationFrameId)
+            gameLost = true
+        }
+
 
         function draw() {
+            // computing the game lost
+
+            obstacles.forEach(obstacle => {
+                if (Player.currentAction === 'sliding' && obstacle.type !== 'parrot') {
+                    if (width * .2 + Player.hitboxSlidingWidth > obstacle.hitboxX &&  width * .2 + Player.hitboxSlidingWidth < obstacle.hitboxX + obstacle.hitboxWidth) {
+                        looseGame()
+                    } else if (width * .2 > obstacle.hitboxX &&  width * .2 < obstacle.hitboxX + obstacle.hitboxWidth) {
+                        looseGame()
+                    }
+                } else if (Player.currentAction !== 'sliding') {
+                    if (height - Player.y > height - (obstacle.y + obstacle.hitboxHeight)) {
+                        if (width * .2 + Player.hitboxRunningWidth > obstacle.hitboxX &&  width * .2 + Player.hitboxRunningWidth < obstacle.hitboxX + obstacle.hitboxWidth) {
+                            looseGame()
+                        } else if (width * .2 + Player.paddingLeft > obstacle.hitboxX &&  width * .2 + Player.paddingLeft < obstacle.hitboxX + obstacle.hitboxWidth) {
+                            looseGame()
+                        }
+                    }
+                }
+            })
+
+
+
             // initialize state to start
 
             if (wallpapers.length === 0) {
@@ -240,36 +274,54 @@ export default function GameField() {
 
                 if ((obstacles[obstacles.length - 1].x + cageWidth) <= width) {
                     const type = getNewObstacleType()
-                    switch (type) {
+                    let previousObstacleWidth
+                    switch (obstacles[obstacles.length - 1].type) {
                         case 'cage':
-                            obstacles.push(new CageClass(obstacles[obstacles.length - 1].x + cageWidth + getRandomPosition())) 
+                            previousObstacleWidth = cageWidth 
                             break
                         case 'chair':
-                            obstacles.push(new ChairClass(obstacles[obstacles.length - 1].x + chairWidth + getRandomPosition())) 
+                            previousObstacleWidth = chairWidth
                             break
                         case 'backpack':
-                            obstacles.push(new BackpackClass(obstacles[obstacles.length - 1].x + backpackWidth + getRandomPosition())) 
+                            previousObstacleWidth = backpackWidth
                             break
                         case 'parrot':
-                            obstacles.push(new ParrotClass(obstacles[obstacles.length - 1].x + parrotWidth + getRandomPosition())) 
+                            previousObstacleWidth = parrotWidth
                             break
                         default: 
-                            obstacles.push(new CageClass(obstacles[obstacles.length - 1].x + cageWidth + getRandomPosition()))
+                            previousObstacleWidth = cageWidth 
                             break
                     }
-
-
-
+                    switch (type) {
+                        case 'cage':
+                            obstacles.push(new CageClass(obstacles[obstacles.length - 1].x + previousObstacleWidth + getRandomPosition())) 
+                            break
+                        case 'chair':
+                            obstacles.push(new ChairClass(obstacles[obstacles.length - 1].x + previousObstacleWidth + getRandomPosition())) 
+                            break
+                        case 'backpack':
+                            obstacles.push(new BackpackClass(obstacles[obstacles.length - 1].x + previousObstacleWidth + getRandomPosition())) 
+                            break
+                        case 'parrot':
+                            obstacles.push(new ParrotClass(obstacles[obstacles.length - 1].x + previousObstacleWidth + getRandomPosition())) 
+                            break
+                        default: 
+                            obstacles.push(new CageClass(obstacles[obstacles.length - 1].x + previousObstacleWidth + getRandomPosition()))
+                            break
+                    }
                 }
+
+
+
             }
 
+            if (!gameLost) {
+                animationFrameId = requestAnimationFrame(draw)
+            }
 
-
-
-            requestAnimationFrame(draw)
         }
 
-        requestAnimationFrame(draw)
+        animationFrameId = requestAnimationFrame(draw)
         
     }
 

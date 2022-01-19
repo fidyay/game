@@ -2,6 +2,9 @@ export default class Parrot {
     type = 'parrot'
     _animationState = 0
     _perf = performance.now()
+    y = 100
+    hitboxWidth = 30
+    hitboxHeight = 28
     constructor(x) {
         this.x = x
     }
@@ -17,5 +20,8 @@ export default class Parrot {
             }
         }
         return imageX
+    }
+    get hitboxX() {
+        return this.x
     }
 }
