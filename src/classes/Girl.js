@@ -1,11 +1,11 @@
+import JumpSound from "../audio/jump.wav"
+
 export default class Girl {
     currentAction = 'running'
     _perf = performance.now()
     _jumpPerf = performance.now()
     _animationState = 0
     hitboxRunningWidth = 36
-    // hitboxRunningHeight = 132
-    // hitboxSlidingHeight = 78
     hitboxSlidingWidth = 120
     _cv = 14
     _jumpY = 0
@@ -53,6 +53,8 @@ export default class Girl {
     jump() {
         this.currentAction = 'jumping'
         this._animationState = 0
+        const jump = new Audio(JumpSound)
+        jump.play()
     }
     run() {
         this.currentAction = 'running'

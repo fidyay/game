@@ -254,6 +254,8 @@ export default function GameField() {
                     record = points
                     localStorage.setItem('record', record)
                 }
+
+                // playing powerUp
                 if (points % 100 === 0) {
                     const powerUp = new Audio(PowerUpAudio)
                     powerUp.play()
