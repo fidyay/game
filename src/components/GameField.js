@@ -19,6 +19,7 @@ import ParrotSource from "../sprites/parrot.png";
 import GirlRunningSource from "../sprites/girl_running.png";
 import GirlJumpingSource from "../sprites/girl_jumping.png";
 import GirlSlidingSource from "../sprites/girl_sliding.png";
+import PowerUpAudio from "../audio/powerUp.wav"
 
 const Wallpaper = new Image()
 Wallpaper.src = WallpaperSource
@@ -252,6 +253,10 @@ export default function GameField() {
                 if (points > record) {
                     record = points
                     localStorage.setItem('record', record)
+                }
+                if (points % 100 === 0) {
+                    const powerUp = new Audio(PowerUpAudio)
+                    powerUp.play()
                 }
             }
 
