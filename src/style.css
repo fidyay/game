@@ -1,5 +1,10 @@
 @import '~@csstools/normalize.css';
 
+@font-face {
+    font-family: "Roboto";
+    src: url("./fonts/Roboto-Bold.ttf") format("opentype");
+   }
+
 * {
     margin: 0;
     padding: 0;

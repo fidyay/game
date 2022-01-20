@@ -80,6 +80,9 @@ export default function GameField() {
         let movingSpeed = 8
         let perf = performance.now()
         const Player = new GirlClass()
+        let pointsPerf = performance.now()
+        let points = 0
+        let record = localStorage.getItem('record') || 0
 
 
         // temporary variable
@@ -221,15 +224,39 @@ export default function GameField() {
                 })
             }
 
+            // drawing game points
+            cd.font = '30px Roboto'
+            cd.fillStyle = '#e5da1f'
+            cd.lineWidth = 2
+            const pointsMeasurement = cd.measureText(points)
+            cd.fillText(points, width - 50 - pointsMeasurement.width, 50)
+            cd.strokeText(points, width - 50 - pointsMeasurement.width, 50)
+            // drawing record
+            cd.fillStyle = '#957b09'
+            const recordMeasurement = cd.measureText(record)
+            cd.fillText(record, width - 60 - pointsMeasurement.width - recordMeasurement.width, 50)
+            cd.strokeText(record, width - 60 - pointsMeasurement.width  - recordMeasurement.width, 50)
+
+
+            // computing next state
+
             // adding particles while sliding
             if (Player.currentAction === 'sliding') {
                 particles.push(new Particle(width, height, floorHeight))
             }
 
+            // computing points
+            if (performance.now() - pointsPerf >= 60) {
+                pointsPerf = performance.now()
+                points++
+                if (points > record) {
+                    record = points
+                    localStorage.setItem('record', record)
+                }
+            }
+
             if ((performance.now() - perf) >= 16) {
                 perf = performance.now()
-                
-                // computing next state
 
                 // computing wallpapers
 
