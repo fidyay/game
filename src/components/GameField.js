@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import useWindowDimensions from "../hooks/useWindowDimensions.js";
 import getRandomPosition from "../functions/getRandomPosition.js";
 import getNewObstacleType from "../functions/getNewObstacleType.js";
@@ -19,7 +19,10 @@ import ParrotSource from "../sprites/parrot.png";
 import GirlRunningSource from "../sprites/girl_running.png";
 import GirlJumpingSource from "../sprites/girl_jumping.png";
 import GirlSlidingSource from "../sprites/girl_sliding.png";
-import PowerUpAudio from "../audio/powerUp.wav"
+import PowerUpAudio from "../audio/powerUp.wav";
+import HurtAudio from "../audio/hurt.wav"
+
+
 
 const Wallpaper = new Image()
 Wallpaper.src = WallpaperSource
@@ -58,9 +61,10 @@ const girlJumpingHeight = 156
 const girlSlidingWidth = 120
 const girlSlidingHeight = 78
 
-export default function GameField() {
+export default function GameField({setGameStarted, setGameLost, gameStarted, gameLostOnce}) {
     const {height, width} = useWindowDimensions()
     const [canvas, setCanvas] = useState(null)
+
 
     const getCanvas = useCallback(element => {
         if (element === null) return
@@ -78,21 +82,50 @@ export default function GameField() {
         const obstacles = []
         const particles = []
         let animationFrameId
-        let movingSpeed = 8
+        let movingSpeed = 10
         let perf = performance.now()
         const Player = new GirlClass()
         let pointsPerf = performance.now()
         let points = 0
         let record = localStorage.getItem('record') || 0
-
-
-        // temporary variable
-
         let gameLost = false
 
 
+        // just draw the scene for start menu
+
+        function drawOnce() {
+            if (wallpapers.length === 0) {
+                for (let i = 0; i < wallpaperColumns; i++) {
+                    for (let j = 0; j < wallpaperRows; j++) {
+                        wallpapers.push(new WallpaperClass(wallpaperWidth * i, wallpaperWidth * j))
+                    }
+                }
+            }
+
+            if (floors.length === 0) {
+                for (let i = 0; i < floorUnits; i++) {
+                    floors.push(new FloorClass(i * floorWidth))
+                }
+            }
+
+            wallpapers.forEach(wallpaper => {
+                cd.drawImage(Wallpaper, wallpaper.x, wallpaper.y)
+            })
+            floors.forEach(floor => {
+                cd.drawImage(Floor, floor.x, height - floorHeight)
+            })
+            cd.drawImage(GirlRunning, 0, 0, girlRunningWidth, girlRunningHeight, width * .2, height - floorHeight + 12 - girlRunningHeight, girlRunningWidth, girlRunningHeight)
+        }
+
+        if (!gameStarted && !gameLostOnce) {
+            drawOnce()
+            return
+        }
+        if (!gameStarted) return
+
         document.addEventListener('keydown', e => {
             const code = e.code
+            if (!Player) return
             if (Player.currentAction !== 'jumping' && Player.currentAction !== 'sliding') {
                 if (code === 'KeyW' || code === 'ArrowUp' || code === 'Space') {
                     Player.jump()
@@ -107,6 +140,7 @@ export default function GameField() {
 
         document.addEventListener('keyup', e => {
             const code = e.code
+            if (!Player) return
             if (Player.currentAction === 'sliding') {
                 if (code === 'KeyS' || code === 'ArrowDown') {
                     Player.run()
@@ -117,10 +151,15 @@ export default function GameField() {
         function looseGame() {
             cancelAnimationFrame(animationFrameId)
             gameLost = true
+            setGameStarted(false)
+            setGameLost(true)
+            const hurt = new Audio(HurtAudio)
+            hurt.play()
         }
 
 
         function draw() {
+            if (!gameStarted) return
             // computing the game lost
 
             obstacles.forEach(obstacle => {
@@ -140,8 +179,6 @@ export default function GameField() {
                     }
                 }
             })
-
-
 
             // initialize state to start
 
@@ -264,6 +301,10 @@ export default function GameField() {
 
             if ((performance.now() - perf) >= 16) {
                 perf = performance.now()
+                // computing moving speed
+                if (movingSpeed < 25) {
+                    movingSpeed += .005
+                }
 
                 // computing wallpapers
 
@@ -349,21 +390,23 @@ export default function GameField() {
 
             }
 
-            if (!gameLost) {
+            if (!gameLost && gameStarted) {
                 animationFrameId = requestAnimationFrame(draw)
             }
 
         }
 
-        animationFrameId = requestAnimationFrame(draw)
-        
+        if (gameStarted) {
+            animationFrameId = requestAnimationFrame(draw)
+        }
+
     }
 
-    useEffect(startGame, [canvas, width, height])
+    useEffect(startGame, [canvas, width, height, gameStarted, gameLostOnce, setGameStarted, setGameLost])
     
-
-
     return (
-        <canvas ref={getCanvas} height={height} width={width}/>
+        <>
+            <canvas ref={getCanvas} height={height} width={width}/>
+        </>
     )
 }
