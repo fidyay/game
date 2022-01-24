@@ -12,3 +12,7 @@ You play as a girl who is running in her room jumping over different obstacles a
 #### On local machine
 1. Install dependencies by **npm install**.
 2. Start the game by **npm start**.
+
+#### Online
+
+Go [here](https://room-run.vercel.app/).
