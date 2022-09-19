@@ -20,7 +20,8 @@ import GirlRunningSource from "../sprites/girl_running.png";
 import GirlJumpingSource from "../sprites/girl_jumping.png";
 import GirlSlidingSource from "../sprites/girl_sliding.png";
 import PowerUpAudio from "../audio/powerUp.wav";
-import HurtAudio from "../audio/hurt.wav"
+import HurtAudio from "../audio/hurt.wav";
+import Controls from "./Controls.js";
 
 
 
@@ -71,6 +72,8 @@ export default function GameField({setGameStarted, setGameLost, gameStarted, gam
         setCanvas(element)
     }, [setCanvas])
 
+	let Player
+
     function startGame() {
         if (!canvas) return
         const cd = canvas.getContext('2d')
@@ -84,7 +87,7 @@ export default function GameField({setGameStarted, setGameLost, gameStarted, gam
         let animationFrameId
         let movingSpeed = 10
         let perf = performance.now()
-        const Player = new GirlClass()
+        Player = new GirlClass()
         let pointsPerf = performance.now()
         let points = 0
         let record = localStorage.getItem('record') || 0
@@ -149,6 +152,7 @@ export default function GameField({setGameStarted, setGameLost, gameStarted, gam
         })
 
         function looseGame() {
+	    Player = null
             cancelAnimationFrame(animationFrameId)
             gameLost = true
             setGameStarted(false)
@@ -407,6 +411,26 @@ export default function GameField({setGameStarted, setGameLost, gameStarted, gam
     return (
         <>
             <canvas ref={getCanvas} height={height} width={width}/>
+	    <Controls
+	    	jump={() => {
+			if (!Player) return
+			if (Player.currentAction !== 'jumping' && Player.currentAction !== 'sliding') {
+				Player.jump()
+			}
+		}}
+	    	startSliding={() => {
+			if (!Player) return
+			if (Player.currentAction !== 'jumping' && Player.currentAction !== 'sliding') {
+				Player.slide()
+			}
+		}}
+	    	stopSliding={() => {
+			if (!Player) return
+			if (Player.currentAction === 'sliding') {
+				Player.run()
+			}
+		}}
+	    />
         </>
     )
 }
