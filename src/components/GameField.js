@@ -23,414 +23,556 @@ import PowerUpAudio from "../audio/powerUp.wav";
 import HurtAudio from "../audio/hurt.wav";
 import Controls from "./Controls.js";
 
+const Wallpaper = new Image();
+Wallpaper.src = WallpaperSource;
+const Floor = new Image();
+Floor.src = FloorSource;
+const Cage = new Image();
+Cage.src = CageSource;
+const Chair = new Image();
+Chair.src = ChairSource;
+const Backpack = new Image();
+Backpack.src = BackpackSource;
+const Parrot = new Image();
+Parrot.src = ParrotSource;
+const GirlRunning = new Image();
+GirlRunning.src = GirlRunningSource;
+const GirlJumping = new Image();
+GirlJumping.src = GirlJumpingSource;
+const GirlSliding = new Image();
+GirlSliding.src = GirlSlidingSource;
 
+const wallpaperWidth = 84;
+const floorWidth = 192;
+const floorHeight = 72;
+const cageHeight = 102;
+const cageWidth = 94;
+const chairHeight = 95;
+const chairWidth = 53;
+const backpackHeight = 82;
+const backpackWidth = 85;
+const parrotWidth = 46;
+const parrotHeight = 28;
+const girlRunningWidth = 66;
+const girlRunningHeight = 132;
+const girlJumpingWidth = 78;
+const girlJumpingHeight = 156;
+const girlSlidingWidth = 120;
+const girlSlidingHeight = 78;
 
-const Wallpaper = new Image()
-Wallpaper.src = WallpaperSource
-const Floor = new Image()
-Floor.src = FloorSource
-const Cage = new Image()
-Cage.src = CageSource
-const Chair = new Image()
-Chair.src = ChairSource
-const Backpack = new Image()
-Backpack.src = BackpackSource
-const Parrot = new Image()
-Parrot.src = ParrotSource
-const GirlRunning = new Image()
-GirlRunning.src = GirlRunningSource
-const GirlJumping = new Image()
-GirlJumping.src = GirlJumpingSource
-const GirlSliding = new Image()
-GirlSliding.src = GirlSlidingSource
+export default function GameField({
+  setGameStarted,
+  setGameLost,
+  gameStarted,
+  gameLostOnce,
+}) {
+  const { height, width } = useWindowDimensions();
+  const [canvas, setCanvas] = useState(null);
 
-const wallpaperWidth = 84
-const floorWidth = 192
-const floorHeight = 72
-const cageHeight = 102
-const cageWidth = 94
-const chairHeight = 95
-const chairWidth = 53
-const backpackHeight = 82
-const backpackWidth = 85
-const parrotWidth = 46
-const parrotHeight = 28
-const girlRunningWidth = 66
-const girlRunningHeight = 132
-const girlJumpingWidth = 78
-const girlJumpingHeight = 156
-const girlSlidingWidth = 120
-const girlSlidingHeight = 78
+  const getCanvas = useCallback(
+    (element) => {
+      if (element === null) return;
+      setCanvas(element);
+    },
+    [setCanvas]
+  );
 
-export default function GameField({setGameStarted, setGameLost, gameStarted, gameLostOnce}) {
-    const {height, width} = useWindowDimensions()
-    const [canvas, setCanvas] = useState(null)
+  let Player;
 
+  function startGame() {
+    if (!canvas) return;
+    const cd = canvas.getContext("2d");
+    const wallpaperColumns = Math.ceil(width / wallpaperWidth);
+    const wallpaperRows = Math.ceil(height / wallpaperWidth);
+    const floorUnits = Math.ceil(width / floorWidth);
+    const wallpapers = [];
+    const floors = [];
+    const obstacles = [];
+    const particles = [];
+    let animationFrameId;
+    let movingSpeed = 10;
+    let perf = performance.now();
+    Player = new GirlClass();
+    let pointsPerf = performance.now();
+    let points = 0;
+    let record = localStorage.getItem("record") || 0;
+    let gameLost = false;
 
-    const getCanvas = useCallback(element => {
-        if (element === null) return
-        setCanvas(element)
-    }, [setCanvas])
+    // just draw the scene for start menu
 
-	let Player
-
-    function startGame() {
-        if (!canvas) return
-        const cd = canvas.getContext('2d')
-        const wallpaperColumns = Math.ceil(width/wallpaperWidth)
-        const wallpaperRows = Math.ceil(height/wallpaperWidth)
-        const floorUnits = Math.ceil(width/floorWidth)
-        const wallpapers = []
-        const floors = []
-        const obstacles = []
-        const particles = []
-        let animationFrameId
-        let movingSpeed = 10
-        let perf = performance.now()
-        Player = new GirlClass()
-        let pointsPerf = performance.now()
-        let points = 0
-        let record = localStorage.getItem('record') || 0
-        let gameLost = false
-
-
-        // just draw the scene for start menu
-
-        function drawOnce() {
-            if (wallpapers.length === 0) {
-                for (let i = 0; i < wallpaperColumns; i++) {
-                    for (let j = 0; j < wallpaperRows; j++) {
-                        wallpapers.push(new WallpaperClass(wallpaperWidth * i, wallpaperWidth * j))
-                    }
-                }
-            }
-
-            if (floors.length === 0) {
-                for (let i = 0; i < floorUnits; i++) {
-                    floors.push(new FloorClass(i * floorWidth))
-                }
-            }
-
-            wallpapers.forEach(wallpaper => {
-                cd.drawImage(Wallpaper, wallpaper.x, wallpaper.y)
-            })
-            floors.forEach(floor => {
-                cd.drawImage(Floor, floor.x, height - floorHeight)
-            })
-            cd.drawImage(GirlRunning, 0, 0, girlRunningWidth, girlRunningHeight, width * .2, height - floorHeight + 12 - girlRunningHeight, girlRunningWidth, girlRunningHeight)
+    function drawOnce() {
+      if (wallpapers.length === 0) {
+        for (let i = 0; i < wallpaperColumns; i++) {
+          for (let j = 0; j < wallpaperRows; j++) {
+            wallpapers.push(
+              new WallpaperClass(wallpaperWidth * i, wallpaperWidth * j)
+            );
+          }
         }
+      }
 
-        if (!gameStarted && !gameLostOnce) {
-            drawOnce()
-            return
+      if (floors.length === 0) {
+        for (let i = 0; i < floorUnits; i++) {
+          floors.push(new FloorClass(i * floorWidth));
         }
-        if (!gameStarted) return
+      }
 
-        document.addEventListener('keydown', e => {
-            const code = e.code
-            if (!Player) return
-            if (Player.currentAction !== 'jumping' && Player.currentAction !== 'sliding') {
-                if (code === 'KeyW' || code === 'ArrowUp' || code === 'Space') {
-                    Player.jump()
-                }
-            }
-            if (Player.currentAction !== 'sliding' && Player.currentAction !== 'jumping') {
-                if (code === 'KeyS' || code === 'ArrowDown') {
-                    Player.slide()
-                }
-            }
-        }) 
-
-        document.addEventListener('keyup', e => {
-            const code = e.code
-            if (!Player) return
-            if (Player.currentAction === 'sliding') {
-                if (code === 'KeyS' || code === 'ArrowDown') {
-                    Player.run()
-                }
-            }
-        })
-
-        function looseGame() {
-	    Player = null
-            cancelAnimationFrame(animationFrameId)
-            gameLost = true
-            setGameStarted(false)
-            setGameLost(true)
-            const hurt = new Audio(HurtAudio)
-            hurt.play()
-        }
-
-
-        function draw() {
-            if (!gameStarted) return
-            // computing the game lost
-
-            obstacles.forEach(obstacle => {
-                if (Player.currentAction === 'sliding' && obstacle.type !== 'parrot') {
-                    if (width * .2 + Player.hitboxSlidingWidth > obstacle.hitboxX &&  width * .2 + Player.hitboxSlidingWidth < obstacle.hitboxX + obstacle.hitboxWidth) {
-                        looseGame()
-                    } else if (width * .2 > obstacle.hitboxX &&  width * .2 < obstacle.hitboxX + obstacle.hitboxWidth) {
-                        looseGame()
-                    }
-                } else if (Player.currentAction !== 'sliding') {
-                    if (height - Player.y > height - (obstacle.y + obstacle.hitboxHeight)) {
-                        if (width * .2 + Player.hitboxRunningWidth > obstacle.hitboxX &&  width * .2 + Player.hitboxRunningWidth < obstacle.hitboxX + obstacle.hitboxWidth) {
-                            looseGame()
-                        } else if (width * .2 + Player.paddingLeft > obstacle.hitboxX &&  width * .2 + Player.paddingLeft < obstacle.hitboxX + obstacle.hitboxWidth) {
-                            looseGame()
-                        }
-                    }
-                }
-            })
-
-            // initialize state to start
-
-            if (wallpapers.length === 0) {
-                for (let i = 0; i < wallpaperColumns; i++) {
-                    for (let j = 0; j < wallpaperRows; j++) {
-                        wallpapers.push(new WallpaperClass(wallpaperWidth * i, wallpaperWidth * j))
-                    }
-                }
-            }
-
-            if (floors.length === 0) {
-                for (let i = 0; i < floorUnits; i++) {
-                    floors.push(new FloorClass(i * floorWidth))
-                }
-            }
-
-            if (obstacles.length === 0) {
-                obstacles.push(new CageClass(width + getRandomPosition()))
-            }
-
-            if (Player.currentAction !== 'sliding' && particles.length > 0) {
-                particles.length = 0
-            }
-
-            // drawing current state of the game
-    
-            cd.clearRect(0, 0, width, height)
-
-            wallpapers.forEach(wallpaper => {
-                cd.drawImage(Wallpaper, wallpaper.x, wallpaper.y)
-            })
-            floors.forEach(floor => {
-                cd.drawImage(Floor, floor.x, height - floorHeight)
-            })
-            obstacles.forEach(obstacle => {
-                switch (obstacle.type) {
-                    case 'cage':
-                        cd.drawImage(Cage, obstacle.x, height - floorHeight + 12 - cageHeight)
-                        break
-                    case 'chair':
-                        cd.drawImage(Chair, obstacle.x, height - floorHeight + 12 - chairHeight)
-                        break
-                    case 'backpack':
-                        cd.drawImage(Backpack, obstacle.x, height - floorHeight + 12 - backpackHeight) 
-                        break
-                    case 'parrot':
-                        cd.drawImage(Parrot, obstacle.imageX, 0, parrotWidth, parrotHeight, obstacle.x, height - floorHeight + 12 - parrotHeight - 100, parrotWidth, parrotHeight) 
-                        break
-                    default: 
-                        cd.drawImage(Cage, obstacle.x, height - floorHeight + 12 - cageHeight)
-                        break
-                }
-            })
-
-            // drawing player
-
-            if (Player.currentAction === 'running') {
-                cd.drawImage(GirlRunning, Player.imageX, 0, girlRunningWidth, girlRunningHeight, width * .2, height - floorHeight + 12 - girlRunningHeight, girlRunningWidth, girlRunningHeight)
-            } else if (Player.currentAction === 'jumping') {
-                cd.drawImage(GirlJumping, Player.jumpImageX, 0, girlJumpingWidth, girlJumpingHeight, width * .2, height - floorHeight + 12 - girlJumpingHeight - Player.jumpY, girlJumpingWidth, girlJumpingHeight)
-            } else if (Player.currentAction === 'sliding') {
-                cd.drawImage(GirlSliding, Player.imageX, 0, girlSlidingWidth, girlSlidingHeight, width * .2, height - floorHeight + 12 - girlSlidingHeight, girlSlidingWidth, girlSlidingHeight)
-            }
-
-            // drawing particles
-
-            if (Player.currentAction === 'sliding') {
-                const transparentParticlesIndex = []
-                particles.forEach((particle, index) => {
-                    if (particle._opacity <= 0) {
-                        transparentParticlesIndex.push(index)
-                    }
-                })
-                transparentParticlesIndex.forEach(index => {
-                    particles.splice(index, 1)
-                })
-                particles.forEach(particle => {
-                    cd.fillStyle = `rgba(238, 211, 164, ${particle.opacity})`
-                    cd.fillRect(particle.x, particle.y, particle.width, particle.height)
-                })
-            }
-
-            // drawing game points
-            cd.font = '30px Roboto'
-            cd.fillStyle = '#e5da1f'
-            cd.lineWidth = 2
-            const pointsMeasurement = cd.measureText(points)
-            cd.fillText(points, width - 50 - pointsMeasurement.width, 50)
-            cd.strokeText(points, width - 50 - pointsMeasurement.width, 50)
-            // drawing record
-            cd.fillStyle = '#957b09'
-            const recordMeasurement = cd.measureText(record)
-            cd.fillText(record, width - 60 - pointsMeasurement.width - recordMeasurement.width, 50)
-            cd.strokeText(record, width - 60 - pointsMeasurement.width  - recordMeasurement.width, 50)
-
-
-            // computing next state
-
-            // adding particles while sliding
-            if (Player.currentAction === 'sliding') {
-                particles.push(new Particle(width, height, floorHeight))
-            }
-
-            // computing points
-            if (performance.now() - pointsPerf >= 60) {
-                pointsPerf = performance.now()
-                points++
-                if (points > record) {
-                    record = points
-                    localStorage.setItem('record', record)
-                }
-
-                // playing powerUp
-                if (points % 100 === 0) {
-                    const powerUp = new Audio(PowerUpAudio)
-                    powerUp.play()
-                }
-            }
-
-            if ((performance.now() - perf) >= 16) {
-                perf = performance.now()
-                // computing moving speed
-                if (movingSpeed < 25) {
-                    movingSpeed += .005
-                }
-
-                // computing wallpapers
-
-                wallpapers.forEach(wallpaper => {
-                    wallpaper.x -= movingSpeed
-                })
-                wallpapers.forEach((wallpaper, index) => {
-                    if (wallpaper.x + wallpaperWidth <= 0) {
-                        wallpapers.splice(index, 1)
-                    }
-                })
-                if ((wallpapers[wallpapers.length - 1].x + wallpaperWidth) <= width) {
-                    const lastX = wallpapers[wallpapers.length - 1].x + wallpaperWidth
-                    for (let i = 0; i < wallpaperRows; i++) {
-                        wallpapers.push(new WallpaperClass(lastX, i * wallpaperWidth))
-                    }
-                }
-
-                // computing floors
-                
-                floors.forEach(floor => {
-                    floor.x -= movingSpeed
-                })
-
-                if (floors[0].x + floorWidth <= 0) {
-                    floors.shift()
-                }
-
-                if ((floors[floors.length - 1].x + floorWidth) <= width) {
-                    floors.push(new FloorClass(floors[floors.length - 1].x + floorWidth))
-                }
-
-
-                // computing obstacles 
-                obstacles.forEach(obstacle => {
-                    obstacle.x -= movingSpeed
-                })
-
-                if (obstacles[0].x + cageWidth <= 0) {
-                    obstacles.shift()
-                }
-
-                if ((obstacles[obstacles.length - 1].x + cageWidth) <= width) {
-                    const type = getNewObstacleType()
-                    let previousObstacleWidth
-                    switch (obstacles[obstacles.length - 1].type) {
-                        case 'cage':
-                            previousObstacleWidth = cageWidth 
-                            break
-                        case 'chair':
-                            previousObstacleWidth = chairWidth
-                            break
-                        case 'backpack':
-                            previousObstacleWidth = backpackWidth
-                            break
-                        case 'parrot':
-                            previousObstacleWidth = parrotWidth
-                            break
-                        default: 
-                            previousObstacleWidth = cageWidth 
-                            break
-                    }
-                    switch (type) {
-                        case 'cage':
-                            obstacles.push(new CageClass(obstacles[obstacles.length - 1].x + previousObstacleWidth + getRandomPosition())) 
-                            break
-                        case 'chair':
-                            obstacles.push(new ChairClass(obstacles[obstacles.length - 1].x + previousObstacleWidth + getRandomPosition())) 
-                            break
-                        case 'backpack':
-                            obstacles.push(new BackpackClass(obstacles[obstacles.length - 1].x + previousObstacleWidth + getRandomPosition())) 
-                            break
-                        case 'parrot':
-                            obstacles.push(new ParrotClass(obstacles[obstacles.length - 1].x + previousObstacleWidth + getRandomPosition())) 
-                            break
-                        default: 
-                            obstacles.push(new CageClass(obstacles[obstacles.length - 1].x + previousObstacleWidth + getRandomPosition()))
-                            break
-                    }
-                }
-
-
-
-            }
-
-            if (!gameLost && gameStarted) {
-                animationFrameId = requestAnimationFrame(draw)
-            }
-
-        }
-
-        if (gameStarted) {
-            animationFrameId = requestAnimationFrame(draw)
-        }
-
+      wallpapers.forEach((wallpaper) => {
+        cd.drawImage(Wallpaper, wallpaper.x, wallpaper.y);
+      });
+      floors.forEach((floor) => {
+        cd.drawImage(Floor, floor.x, height - floorHeight);
+      });
+      cd.drawImage(
+        GirlRunning,
+        0,
+        0,
+        girlRunningWidth,
+        girlRunningHeight,
+        width * 0.2,
+        height - floorHeight + 12 - girlRunningHeight,
+        girlRunningWidth,
+        girlRunningHeight
+      );
     }
 
-    useEffect(startGame, [canvas, width, height, gameStarted, gameLostOnce, setGameStarted, setGameLost])
-    
-    return (
-        <>
-            <canvas ref={getCanvas} height={height} width={width}/>
-	    <Controls
-	    	jump={() => {
-			if (!Player) return
-			if (Player.currentAction !== 'jumping' && Player.currentAction !== 'sliding') {
-				Player.jump()
-			}
-		}}
-	    	startSliding={() => {
-			if (!Player) return
-			if (Player.currentAction !== 'jumping' && Player.currentAction !== 'sliding') {
-				Player.slide()
-			}
-		}}
-	    	stopSliding={() => {
-			if (!Player) return
-			if (Player.currentAction === 'sliding') {
-				Player.run()
-			}
-		}}
-	    />
-        </>
-    )
+    if (!gameStarted && !gameLostOnce) {
+      drawOnce();
+      return;
+    }
+    if (!gameStarted) return;
+
+    document.addEventListener("keydown", (e) => {
+      const code = e.code;
+      if (!Player) return;
+      if (
+        Player.currentAction !== "jumping" &&
+        Player.currentAction !== "sliding"
+      ) {
+        if (code === "KeyW" || code === "ArrowUp" || code === "Space") {
+          Player.jump();
+        }
+      }
+      if (
+        Player.currentAction !== "sliding" &&
+        Player.currentAction !== "jumping"
+      ) {
+        if (code === "KeyS" || code === "ArrowDown") {
+          Player.slide();
+        }
+      }
+    });
+
+    document.addEventListener("keyup", (e) => {
+      const code = e.code;
+      if (!Player) return;
+      if (Player.currentAction === "sliding") {
+        if (code === "KeyS" || code === "ArrowDown") {
+          Player.run();
+        }
+      }
+    });
+
+    function looseGame() {
+      Player = null;
+      cancelAnimationFrame(animationFrameId);
+      gameLost = true;
+      setGameStarted(false);
+      setGameLost(true);
+      const hurt = new Audio(HurtAudio);
+      hurt.play();
+    }
+
+    function draw() {
+      if (!gameStarted) return;
+      // computing the game lost
+
+      obstacles.forEach((obstacle) => {
+        if (Player.currentAction === "sliding" && obstacle.type !== "parrot") {
+          if (
+            width * 0.2 + Player.hitboxSlidingWidth > obstacle.hitboxX &&
+            width * 0.2 + Player.hitboxSlidingWidth <
+              obstacle.hitboxX + obstacle.hitboxWidth
+          ) {
+            looseGame();
+          } else if (
+            width * 0.2 > obstacle.hitboxX &&
+            width * 0.2 < obstacle.hitboxX + obstacle.hitboxWidth
+          ) {
+            looseGame();
+          }
+        } else if (Player.currentAction !== "sliding") {
+          if (
+            height - Player.y >
+            height - (obstacle.y + obstacle.hitboxHeight)
+          ) {
+            if (
+              width * 0.2 + Player.hitboxRunningWidth > obstacle.hitboxX &&
+              width * 0.2 + Player.hitboxRunningWidth <
+                obstacle.hitboxX + obstacle.hitboxWidth
+            ) {
+              looseGame();
+            } else if (
+              width * 0.2 + Player.paddingLeft > obstacle.hitboxX &&
+              width * 0.2 + Player.paddingLeft <
+                obstacle.hitboxX + obstacle.hitboxWidth
+            ) {
+              looseGame();
+            }
+          }
+        }
+      });
+
+      // initialize state to start
+
+      if (wallpapers.length === 0) {
+        for (let i = 0; i < wallpaperColumns; i++) {
+          for (let j = 0; j < wallpaperRows; j++) {
+            wallpapers.push(
+              new WallpaperClass(wallpaperWidth * i, wallpaperWidth * j)
+            );
+          }
+        }
+      }
+
+      if (floors.length === 0) {
+        for (let i = 0; i < floorUnits; i++) {
+          floors.push(new FloorClass(i * floorWidth));
+        }
+      }
+
+      if (obstacles.length === 0) {
+        obstacles.push(new CageClass(width + getRandomPosition()));
+      }
+
+      if (Player.currentAction !== "sliding" && particles.length > 0) {
+        particles.length = 0;
+      }
+
+      // drawing current state of the game
+
+      cd.clearRect(0, 0, width, height);
+
+      wallpapers.forEach((wallpaper) => {
+        cd.drawImage(Wallpaper, wallpaper.x, wallpaper.y);
+      });
+      floors.forEach((floor) => {
+        cd.drawImage(Floor, floor.x, height - floorHeight);
+      });
+      obstacles.forEach((obstacle) => {
+        switch (obstacle.type) {
+          case "cage":
+            cd.drawImage(
+              Cage,
+              obstacle.x,
+              height - floorHeight + 12 - cageHeight
+            );
+            break;
+          case "chair":
+            cd.drawImage(
+              Chair,
+              obstacle.x,
+              height - floorHeight + 12 - chairHeight
+            );
+            break;
+          case "backpack":
+            cd.drawImage(
+              Backpack,
+              obstacle.x,
+              height - floorHeight + 12 - backpackHeight
+            );
+            break;
+          case "parrot":
+            cd.drawImage(
+              Parrot,
+              obstacle.imageX,
+              0,
+              parrotWidth,
+              parrotHeight,
+              obstacle.x,
+              height - floorHeight + 12 - parrotHeight - 100,
+              parrotWidth,
+              parrotHeight
+            );
+            break;
+          default:
+            cd.drawImage(
+              Cage,
+              obstacle.x,
+              height - floorHeight + 12 - cageHeight
+            );
+            break;
+        }
+      });
+
+      // drawing player
+
+      if (Player.currentAction === "running") {
+        cd.drawImage(
+          GirlRunning,
+          Player.imageX,
+          0,
+          girlRunningWidth,
+          girlRunningHeight,
+          width * 0.2,
+          height - floorHeight + 12 - girlRunningHeight,
+          girlRunningWidth,
+          girlRunningHeight
+        );
+      } else if (Player.currentAction === "jumping") {
+        cd.drawImage(
+          GirlJumping,
+          Player.jumpImageX,
+          0,
+          girlJumpingWidth,
+          girlJumpingHeight,
+          width * 0.2,
+          height - floorHeight + 12 - girlJumpingHeight - Player.jumpY,
+          girlJumpingWidth,
+          girlJumpingHeight
+        );
+      } else if (Player.currentAction === "sliding") {
+        cd.drawImage(
+          GirlSliding,
+          Player.imageX,
+          0,
+          girlSlidingWidth,
+          girlSlidingHeight,
+          width * 0.2,
+          height - floorHeight + 12 - girlSlidingHeight,
+          girlSlidingWidth,
+          girlSlidingHeight
+        );
+      }
+
+      // drawing particles
+
+      if (Player.currentAction === "sliding") {
+        const transparentParticlesIndex = [];
+        particles.forEach((particle, index) => {
+          if (particle._opacity <= 0) {
+            transparentParticlesIndex.push(index);
+          }
+        });
+        transparentParticlesIndex.forEach((index) => {
+          particles.splice(index, 1);
+        });
+        particles.forEach((particle) => {
+          cd.fillStyle = `rgba(238, 211, 164, ${particle.opacity})`;
+          cd.fillRect(particle.x, particle.y, particle.width, particle.height);
+        });
+      }
+
+      // drawing game points
+      cd.font = "30px Roboto";
+      cd.fillStyle = "#e5da1f";
+      cd.lineWidth = 2;
+      const pointsMeasurement = cd.measureText(points);
+      cd.fillText(points, width - 50 - pointsMeasurement.width, 50);
+      cd.strokeText(points, width - 50 - pointsMeasurement.width, 50);
+      // drawing record
+      cd.fillStyle = "#957b09";
+      const recordMeasurement = cd.measureText(record);
+      cd.fillText(
+        record,
+        width - 60 - pointsMeasurement.width - recordMeasurement.width,
+        50
+      );
+      cd.strokeText(
+        record,
+        width - 60 - pointsMeasurement.width - recordMeasurement.width,
+        50
+      );
+
+      // computing next state
+
+      // adding particles while sliding
+      if (Player.currentAction === "sliding") {
+        particles.push(new Particle(width, height, floorHeight));
+      }
+
+      // computing points
+      if (performance.now() - pointsPerf >= 60) {
+        pointsPerf = performance.now();
+        points++;
+        if (points > record) {
+          record = points;
+          localStorage.setItem("record", record);
+        }
+
+        // playing powerUp
+        if (points % 100 === 0) {
+          const powerUp = new Audio(PowerUpAudio);
+          powerUp.play();
+        }
+      }
+
+      if (performance.now() - perf >= 16) {
+        perf = performance.now();
+        // computing moving speed
+        if (movingSpeed < 25) {
+          movingSpeed += 0.005;
+        }
+
+        // computing wallpapers
+
+        wallpapers.forEach((wallpaper) => {
+          wallpaper.x -= movingSpeed;
+        });
+        wallpapers.forEach((wallpaper, index) => {
+          if (wallpaper.x + wallpaperWidth <= 0) {
+            wallpapers.splice(index, 1);
+          }
+        });
+        if (wallpapers[wallpapers.length - 1].x + wallpaperWidth <= width) {
+          const lastX = wallpapers[wallpapers.length - 1].x + wallpaperWidth;
+          for (let i = 0; i < wallpaperRows; i++) {
+            wallpapers.push(new WallpaperClass(lastX, i * wallpaperWidth));
+          }
+        }
+
+        // computing floors
+
+        floors.forEach((floor) => {
+          floor.x -= movingSpeed;
+        });
+
+        if (floors[0].x + floorWidth <= 0) {
+          floors.shift();
+        }
+
+        if (floors[floors.length - 1].x + floorWidth <= width) {
+          floors.push(new FloorClass(floors[floors.length - 1].x + floorWidth));
+        }
+
+        // computing obstacles
+        obstacles.forEach((obstacle) => {
+          obstacle.x -= movingSpeed;
+        });
+
+        if (obstacles[0].x + cageWidth <= 0) {
+          obstacles.shift();
+        }
+
+        if (obstacles[obstacles.length - 1].x + cageWidth <= width) {
+          const type = getNewObstacleType();
+          let previousObstacleWidth;
+          switch (obstacles[obstacles.length - 1].type) {
+            case "cage":
+              previousObstacleWidth = cageWidth;
+              break;
+            case "chair":
+              previousObstacleWidth = chairWidth;
+              break;
+            case "backpack":
+              previousObstacleWidth = backpackWidth;
+              break;
+            case "parrot":
+              previousObstacleWidth = parrotWidth;
+              break;
+            default:
+              previousObstacleWidth = cageWidth;
+              break;
+          }
+          switch (type) {
+            case "cage":
+              obstacles.push(
+                new CageClass(
+                  obstacles[obstacles.length - 1].x +
+                    previousObstacleWidth +
+                    getRandomPosition()
+                )
+              );
+              break;
+            case "chair":
+              obstacles.push(
+                new ChairClass(
+                  obstacles[obstacles.length - 1].x +
+                    previousObstacleWidth +
+                    getRandomPosition()
+                )
+              );
+              break;
+            case "backpack":
+              obstacles.push(
+                new BackpackClass(
+                  obstacles[obstacles.length - 1].x +
+                    previousObstacleWidth +
+                    getRandomPosition()
+                )
+              );
+              break;
+            case "parrot":
+              obstacles.push(
+                new ParrotClass(
+                  obstacles[obstacles.length - 1].x +
+                    previousObstacleWidth +
+                    getRandomPosition()
+                )
+              );
+              break;
+            default:
+              obstacles.push(
+                new CageClass(
+                  obstacles[obstacles.length - 1].x +
+                    previousObstacleWidth +
+                    getRandomPosition()
+                )
+              );
+              break;
+          }
+        }
+      }
+
+      if (!gameLost && gameStarted) {
+        animationFrameId = requestAnimationFrame(draw);
+      }
+    }
+
+    if (gameStarted) {
+      animationFrameId = requestAnimationFrame(draw);
+    }
+  }
+
+  useEffect(startGame, [
+    canvas,
+    width,
+    height,
+    gameStarted,
+    gameLostOnce,
+    setGameStarted,
+    setGameLost,
+  ]);
+
+  return (
+    <>
+      <canvas ref={getCanvas} height={height} width={width} />
+      <Controls
+        jump={() => {
+          if (!Player) return;
+          if (
+            Player.currentAction !== "jumping" &&
+            Player.currentAction !== "sliding"
+          ) {
+            Player.jump();
+          }
+        }}
+        startSliding={() => {
+          if (!Player) return;
+          if (
+            Player.currentAction !== "jumping" &&
+            Player.currentAction !== "sliding"
+          ) {
+            Player.slide();
+          }
+        }}
+        stopSliding={() => {
+          if (!Player) return;
+          if (Player.currentAction === "sliding") {
+            Player.run();
+          }
+        }}
+      />
+    </>
+  );
 }
