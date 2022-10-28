@@ -38,7 +38,6 @@ GirlJumping.src = GirlJumpingSource;
 const GirlSliding = new Image();
 GirlSliding.src = GirlSlidingSource;
 
-const wallpaperWidth = 78;
 const floorWidth = 192;
 const floorHeight = 72;
 const cageHeight = 102;
@@ -78,10 +77,7 @@ export default function GameField({
   function startGame() {
     if (!canvas) return;
     const cd = canvas.getContext("2d");
-    const wallpaperColumns = Math.ceil(width / wallpaperWidth);
-    const wallpaperRows = Math.ceil(height / wallpaperWidth);
     const floorUnits = Math.ceil(width / floorWidth);
-    const wallpapers = [];
     const floors = [];
     const obstacles = [];
     const particles = [];
