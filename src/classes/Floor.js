@@ -1,5 +1,5 @@
 export default class Floor {
-    constructor(x) {
-        this.x = x
-    }
+  constructor(x) {
+    this.x = x;
+  }
 }

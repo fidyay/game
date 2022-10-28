@@ -1,8 +1,7 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import useWindowDimensions from "../hooks/useWindowDimensions.js";
 import getRandomPosition from "../functions/getRandomPosition.js";
 import getNewObstacleType from "../functions/getNewObstacleType.js";
-import WallpaperClass from "../classes/Wallpaper.js";
 import CageClass from "../classes/Cage.js";
 import FloorClass from "../classes/Floor.js";
 import ChairClass from "../classes/Chair.js";
@@ -10,7 +9,6 @@ import BackpackClass from "../classes/Backpack.js";
 import ParrotClass from "../classes/Parrot.js";
 import GirlClass from "../classes/Girl.js";
 import Particle from "../classes/Particle.js";
-import WallpaperSource from "../sprites/wallpaper.png";
 import FloorSource from "../sprites/floor.png";
 import CageSource from "../sprites/cage.png";
 import ChairSource from "../sprites/chair.png";
@@ -23,8 +21,6 @@ import PowerUpAudio from "../audio/powerUp.wav";
 import HurtAudio from "../audio/hurt.wav";
 import Controls from "./Controls.js";
 
-const Wallpaper = new Image();
-Wallpaper.src = WallpaperSource;
 const Floor = new Image();
 Floor.src = FloorSource;
 const Cage = new Image();
@@ -42,7 +38,7 @@ GirlJumping.src = GirlJumpingSource;
 const GirlSliding = new Image();
 GirlSliding.src = GirlSlidingSource;
 
-const wallpaperWidth = 84;
+const wallpaperWidth = 78;
 const floorWidth = 192;
 const floorHeight = 72;
 const cageHeight = 102;
@@ -101,25 +97,15 @@ export default function GameField({
     // just draw the scene for start menu
 
     function drawOnce() {
-      if (wallpapers.length === 0) {
-        for (let i = 0; i < wallpaperColumns; i++) {
-          for (let j = 0; j < wallpaperRows; j++) {
-            wallpapers.push(
-              new WallpaperClass(wallpaperWidth * i, wallpaperWidth * j)
-            );
-          }
-        }
-      }
+      // drawing wallpaper
+      cd.fillStyle = "rgb(190, 178, 178)";
+      cd.fillRect(0, 0, width, height);
 
       if (floors.length === 0) {
         for (let i = 0; i < floorUnits; i++) {
           floors.push(new FloorClass(i * floorWidth));
         }
       }
-
-      wallpapers.forEach((wallpaper) => {
-        cd.drawImage(Wallpaper, wallpaper.x, wallpaper.y);
-      });
       floors.forEach((floor) => {
         cd.drawImage(Floor, floor.x, height - floorHeight);
       });
@@ -225,16 +211,6 @@ export default function GameField({
 
       // initialize state to start
 
-      if (wallpapers.length === 0) {
-        for (let i = 0; i < wallpaperColumns; i++) {
-          for (let j = 0; j < wallpaperRows; j++) {
-            wallpapers.push(
-              new WallpaperClass(wallpaperWidth * i, wallpaperWidth * j)
-            );
-          }
-        }
-      }
-
       if (floors.length === 0) {
         for (let i = 0; i < floorUnits; i++) {
           floors.push(new FloorClass(i * floorWidth));
@@ -253,9 +229,10 @@ export default function GameField({
 
       cd.clearRect(0, 0, width, height);
 
-      wallpapers.forEach((wallpaper) => {
-        cd.drawImage(Wallpaper, wallpaper.x, wallpaper.y);
-      });
+      // drawing wallpaper
+      cd.fillStyle = "rgb(190, 178, 178)";
+      cd.fillRect(0, 0, width, height);
+
       floors.forEach((floor) => {
         cd.drawImage(Floor, floor.x, height - floorHeight);
       });
@@ -412,23 +389,6 @@ export default function GameField({
         // computing moving speed
         if (movingSpeed < 25) {
           movingSpeed += 0.005;
-        }
-
-        // computing wallpapers
-
-        wallpapers.forEach((wallpaper) => {
-          wallpaper.x -= movingSpeed;
-        });
-        wallpapers.forEach((wallpaper, index) => {
-          if (wallpaper.x + wallpaperWidth <= 0) {
-            wallpapers.splice(index, 1);
-          }
-        });
-        if (wallpapers[wallpapers.length - 1].x + wallpaperWidth <= width) {
-          const lastX = wallpapers[wallpapers.length - 1].x + wallpaperWidth;
-          for (let i = 0; i < wallpaperRows; i++) {
-            wallpapers.push(new WallpaperClass(lastX, i * wallpaperWidth));
-          }
         }
 
         // computing floors
