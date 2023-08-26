@@ -20,6 +20,7 @@ import GirlSlidingSource from "../sprites/girl_sliding.png";
 import PowerUpAudio from "../audio/powerUp.wav";
 import HurtAudio from "../audio/hurt.wav";
 import Controls from "./Controls.js";
+import isMobile from "../functions/isMobile.js";
 
 const Floor = new Image();
 Floor.src = FloorSource;
@@ -503,32 +504,34 @@ export default function GameField({
   return (
     <>
       <canvas ref={getCanvas} height={height} width={width} />
-      <Controls
-        jump={() => {
-          if (!Player) return;
-          if (
-            Player.currentAction !== "jumping" &&
-            Player.currentAction !== "sliding"
-          ) {
-            Player.jump();
-          }
-        }}
-        startSliding={() => {
-          if (!Player) return;
-          if (
-            Player.currentAction !== "jumping" &&
-            Player.currentAction !== "sliding"
-          ) {
-            Player.slide();
-          }
-        }}
-        stopSliding={() => {
-          if (!Player) return;
-          if (Player.currentAction === "sliding") {
-            Player.run();
-          }
-        }}
-      />
+      {isMobile() && (
+        <Controls
+          jump={() => {
+            if (!Player) return;
+            if (
+              Player.currentAction !== "jumping" &&
+              Player.currentAction !== "sliding"
+            ) {
+              Player.jump();
+            }
+          }}
+          startSliding={() => {
+            if (!Player) return;
+            if (
+              Player.currentAction !== "jumping" &&
+              Player.currentAction !== "sliding"
+            ) {
+              Player.slide();
+            }
+          }}
+          stopSliding={() => {
+            if (!Player) return;
+            if (Player.currentAction === "sliding") {
+              Player.run();
+            }
+          }}
+        />
+      )}
     </>
   );
 }

@@ -31,7 +31,24 @@ body {
   align-items: stretch;
 }
 
-.controls__buttons {
-  padding: 5px 10px;
-  margin-top: 5px;
+.controls__button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 5px;
+  background-color: #b8ae04;
+  color: #fff;
+  font-size: 20px;
+  width: 2em;
+  height: 2em;
+  user-select: none;
+}
+
+.controls__button:active {
+  background-color: #e5da1f;
+}
+
+.controls__button:last-of-type {
+  margin-top: 15px;
 }
