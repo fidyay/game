@@ -17,6 +17,7 @@ import ParrotSource from "../sprites/parrot.png";
 import GirlRunningSource from "../sprites/girl_running.png";
 import GirlJumpingSource from "../sprites/girl_jumping.png";
 import GirlSlidingSource from "../sprites/girl_sliding.png";
+import BoyRunningSource from "../sprites/boy_running.png";
 import PowerUpAudio from "../audio/powerUp.wav";
 import HurtAudio from "../audio/hurt.wav";
 import Controls from "./Controls.js";
@@ -32,6 +33,8 @@ const Backpack = new Image();
 Backpack.src = BackpackSource;
 const Parrot = new Image();
 Parrot.src = ParrotSource;
+const BoyRunning = new Image();
+BoyRunning.src = BoyRunningSource;
 const GirlRunning = new Image();
 GirlRunning.src = GirlRunningSource;
 const GirlJumping = new Image();
@@ -49,6 +52,8 @@ const backpackHeight = 82;
 const backpackWidth = 85;
 const parrotWidth = 46;
 const parrotHeight = 28;
+const boyWidth = 80;
+const boyHeight = 184;
 const girlRunningWidth = 66;
 const girlRunningHeight = 132;
 const girlJumpingWidth = 78;
@@ -269,6 +274,19 @@ export default function GameField({
               parrotHeight
             );
             break;
+          case "boy":
+            cd.drawImage(
+              Parrot,
+              obstacle.imageX,
+              0,
+              parrotWidth,
+              parrotHeight,
+              obstacle.x,
+              height - floorHeight + 12 - boyHeight,
+              boyWidth,
+              boyHeight
+            );
+            break;
           default:
             cd.drawImage(
               Cage,
@@ -426,6 +444,9 @@ export default function GameField({
               break;
             case "parrot":
               previousObstacleWidth = parrotWidth;
+              break;
+            case "boy":
+              previousObstacleWidth = boyWidth;
               break;
             default:
               previousObstacleWidth = cageWidth;

@@ -1,5 +1,5 @@
 export default function getNewObstacleType() {
-  const number = Math.floor(Math.random() * 4);
+  const number = Math.floor(Math.random() * 5);
   let type;
 
   switch (number) {
@@ -14,6 +14,9 @@ export default function getNewObstacleType() {
       break;
     case 3:
       type = "parrot";
+      break;
+    case 4:
+      type = "boy";
       break;
     default:
       type = "cage";
