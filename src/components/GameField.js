@@ -17,10 +17,12 @@ import ParrotSource from "../sprites/parrot.png";
 import GirlRunningSource from "../sprites/girl_running.png";
 import GirlJumpingSource from "../sprites/girl_jumping.png";
 import GirlSlidingSource from "../sprites/girl_sliding.png";
+import BoyRunningSource from "../sprites/boy_running.png";
 import PowerUpAudio from "../audio/powerUp.wav";
 import HurtAudio from "../audio/hurt.wav";
 import Controls from "./Controls.js";
 import isMobile from "../functions/isMobile.js";
+import BoyClass from "../classes/Boy.js";
 
 const Floor = new Image();
 Floor.src = FloorSource;
@@ -32,6 +34,8 @@ const Backpack = new Image();
 Backpack.src = BackpackSource;
 const Parrot = new Image();
 Parrot.src = ParrotSource;
+const BoyRunning = new Image();
+BoyRunning.src = BoyRunningSource;
 const GirlRunning = new Image();
 GirlRunning.src = GirlRunningSource;
 const GirlJumping = new Image();
@@ -49,12 +53,16 @@ const backpackHeight = 82;
 const backpackWidth = 85;
 const parrotWidth = 46;
 const parrotHeight = 28;
+const boyWidth = 66;
+const boyHeight = 132;
 const girlRunningWidth = 66;
 const girlRunningHeight = 132;
 const girlJumpingWidth = 78;
 const girlJumpingHeight = 156;
 const girlSlidingWidth = 120;
 const girlSlidingHeight = 78;
+
+const hurt = new Audio(HurtAudio);
 
 export default function GameField({
   setGameStarted,
@@ -162,15 +170,15 @@ export default function GameField({
       gameLost = true;
       setGameStarted(false);
       setGameLost(true);
-      const hurt = new Audio(HurtAudio);
+
       hurt.play();
     }
 
     function draw() {
       if (!gameStarted) return;
-      // computing the game lost
 
-      obstacles.forEach((obstacle) => {
+      // computing the game lost
+      for (const obstacle of obstacles) {
         if (Player.currentAction === "sliding" && obstacle.type !== "parrot") {
           if (
             width * 0.2 + Player.hitboxSlidingWidth > obstacle.hitboxX &&
@@ -178,11 +186,13 @@ export default function GameField({
               obstacle.hitboxX + obstacle.hitboxWidth
           ) {
             looseGame();
+            return;
           } else if (
             width * 0.2 > obstacle.hitboxX &&
             width * 0.2 < obstacle.hitboxX + obstacle.hitboxWidth
           ) {
             looseGame();
+            return;
           }
         } else if (Player.currentAction !== "sliding") {
           if (
@@ -195,16 +205,18 @@ export default function GameField({
                 obstacle.hitboxX + obstacle.hitboxWidth
             ) {
               looseGame();
+              return;
             } else if (
               width * 0.2 + Player.paddingLeft > obstacle.hitboxX &&
               width * 0.2 + Player.paddingLeft <
                 obstacle.hitboxX + obstacle.hitboxWidth
             ) {
               looseGame();
+              return;
             }
           }
         }
-      });
+      }
 
       // initialize state to start
 
@@ -267,6 +279,19 @@ export default function GameField({
               height - floorHeight + 12 - parrotHeight - 100,
               parrotWidth,
               parrotHeight
+            );
+            break;
+          case "boy":
+            cd.drawImage(
+              BoyRunning,
+              obstacle.imageX,
+              0,
+              boyWidth,
+              boyHeight,
+              obstacle.x,
+              height - floorHeight + 12 - boyHeight,
+              boyWidth,
+              boyHeight
             );
             break;
           default:
@@ -427,6 +452,9 @@ export default function GameField({
             case "parrot":
               previousObstacleWidth = parrotWidth;
               break;
+            case "boy":
+              previousObstacleWidth = boyWidth;
+              break;
             default:
               previousObstacleWidth = cageWidth;
               break;
@@ -462,6 +490,15 @@ export default function GameField({
             case "parrot":
               obstacles.push(
                 new ParrotClass(
+                  obstacles[obstacles.length - 1].x +
+                    previousObstacleWidth +
+                    getRandomPosition()
+                )
+              );
+              break;
+            case "boy":
+              obstacles.push(
+                new BoyClass(
                   obstacles[obstacles.length - 1].x +
                     previousObstacleWidth +
                     getRandomPosition()
