@@ -174,9 +174,9 @@ export default function GameField({
 
     function draw() {
       if (!gameStarted) return;
-      // computing the game lost
 
-      obstacles.forEach((obstacle) => {
+      // computing the game lost
+      for (const obstacle of obstacles) {
         if (Player.currentAction === "sliding" && obstacle.type !== "parrot") {
           if (
             width * 0.2 + Player.hitboxSlidingWidth > obstacle.hitboxX &&
@@ -184,11 +184,13 @@ export default function GameField({
               obstacle.hitboxX + obstacle.hitboxWidth
           ) {
             looseGame();
+            return;
           } else if (
             width * 0.2 > obstacle.hitboxX &&
             width * 0.2 < obstacle.hitboxX + obstacle.hitboxWidth
           ) {
             looseGame();
+            return;
           }
         } else if (Player.currentAction !== "sliding") {
           if (
@@ -201,16 +203,18 @@ export default function GameField({
                 obstacle.hitboxX + obstacle.hitboxWidth
             ) {
               looseGame();
+              return;
             } else if (
               width * 0.2 + Player.paddingLeft > obstacle.hitboxX &&
               width * 0.2 + Player.paddingLeft <
                 obstacle.hitboxX + obstacle.hitboxWidth
             ) {
               looseGame();
+              return;
             }
           }
         }
-      });
+      }
 
       // initialize state to start
 
