@@ -1,5 +1,6 @@
 import JumpSound from "../audio/jump.wav";
 
+const jump = new Audio(JumpSound);
 export default class Girl {
   currentAction = "running";
   _perf = performance.now();
@@ -52,7 +53,7 @@ export default class Girl {
   jump() {
     this.currentAction = "jumping";
     this._animationState = 0;
-    const jump = new Audio(JumpSound);
+
     jump.play();
   }
   run() {

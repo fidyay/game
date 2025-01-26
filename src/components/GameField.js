@@ -62,6 +62,8 @@ const girlJumpingHeight = 156;
 const girlSlidingWidth = 120;
 const girlSlidingHeight = 78;
 
+const hurt = new Audio(HurtAudio);
+
 export default function GameField({
   setGameStarted,
   setGameLost,
@@ -168,7 +170,7 @@ export default function GameField({
       gameLost = true;
       setGameStarted(false);
       setGameLost(true);
-      const hurt = new Audio(HurtAudio);
+
       hurt.play();
     }
 
