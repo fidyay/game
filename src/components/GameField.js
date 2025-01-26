@@ -22,6 +22,7 @@ import PowerUpAudio from "../audio/powerUp.wav";
 import HurtAudio from "../audio/hurt.wav";
 import Controls from "./Controls.js";
 import isMobile from "../functions/isMobile.js";
+import BoyClass from "../classes/Boy.js";
 
 const Floor = new Image();
 Floor.src = FloorSource;
@@ -52,8 +53,8 @@ const backpackHeight = 82;
 const backpackWidth = 85;
 const parrotWidth = 46;
 const parrotHeight = 28;
-const boyWidth = 80;
-const boyHeight = 184;
+const boyWidth = 66;
+const boyHeight = 132;
 const girlRunningWidth = 66;
 const girlRunningHeight = 132;
 const girlJumpingWidth = 78;
@@ -276,11 +277,11 @@ export default function GameField({
             break;
           case "boy":
             cd.drawImage(
-              Parrot,
+              BoyRunning,
               obstacle.imageX,
               0,
-              parrotWidth,
-              parrotHeight,
+              boyWidth,
+              boyHeight,
               obstacle.x,
               height - floorHeight + 12 - boyHeight,
               boyWidth,
@@ -483,6 +484,15 @@ export default function GameField({
             case "parrot":
               obstacles.push(
                 new ParrotClass(
+                  obstacles[obstacles.length - 1].x +
+                    previousObstacleWidth +
+                    getRandomPosition()
+                )
+              );
+              break;
+            case "boy":
+              obstacles.push(
+                new BoyClass(
                   obstacles[obstacles.length - 1].x +
                     previousObstacleWidth +
                     getRandomPosition()
